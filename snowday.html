@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snow Day Predictor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #add8e6;
+            padding: 20px;
+        }
+        h1 {
+            color: #004080;
+        }
+        input, button {
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #008080;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #005f5f;
+        }
+        p {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        img {
+            width: 200px;
+            height: auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Snow Day Predictor</h1>
+    <img src="https://www.iconarchive.com/download/i103483/paomedia/small-n-flat/snow-flake.1024.png" alt="Snowflake">
+    <br>
+    <label for="cloverCount">Enter the number of four-leaf clovers you've found:</label>
+    <input type="number" id="cloverCount" name="cloverCount" min="0">
+    <button onclick="predictSnowDay()">Predict Snow Day</button>
+    <p id="prediction"></p>
+
+    <script>
+        async function predictSnowDay() {
+            const cloverCount = document.getElementById('cloverCount').value;
+
+            if (cloverCount === '') {
+                alert('Please enter the number of four-leaf clovers.');
+                return;
+            }
+
+            // Fetch weather data for Cairo, Egypt
+            const weatherApiUrl = 'https://api.open-meteo.com/v1/forecast?latitude=30.0444&longitude=31.2357&current=temperature_2m&timezone=auto';
+
+            try {
+                const response = await fetch(weatherApiUrl);
+                const weatherData = await response.json();
+                
+                // Extract current temperature in Celsius
+                const temperatureC = weatherData.current.temperature_2m;
+
+                // Calculate snow day probability
+                const baseProbability = 0.1; // Base 10% chance
+                const cloverBonus = Math.min(cloverCount * 0.005, 0.5); // Max 50% bonus
+                const temperatureFactor = temperatureC < 0 ? 0.3 : 0; // 30% bonus if below freezing
+
+                const snowDayProbability = baseProbability + cloverBonus + temperatureFactor;
+
+                // Generate prediction message
+                const predictionMessage = `Based on your ${cloverCount} four-leaf clovers and the current temperature in Cairo (${temperatureC.toFixed(2)}°C), your chance of having a snow day is ${(snowDayProbability * 100).toFixed(2)}%.`;
+
+                document.getElementById('prediction').innerText = predictionMessage;
+            } catch (error) {
+                console.error('Error fetching weather data:', error);
+                alert('Failed to retrieve weather data. Please try again later.');
+            }
+        }
+    </script>
+</body>
+</html>
