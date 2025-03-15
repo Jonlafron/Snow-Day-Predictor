@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snow Day Predictor</title>
+</head>
+<body>
+    <h1>Snow Day Predictor</h1>
+    <label for="cloverCount">Enter the number of four-leaf clovers you've found:</label>
+    <input type="number" id="cloverCount" name="cloverCount" min="0">
+    <button onclick="predictSnowDay()">Predict Snow Day</button>
+    <p id="prediction"></p>
+
+    <script>
+        async function predictSnowDay() {
+            const cloverCount = document.getElementById('cloverCount').value;
+
+            if (cloverCount === '') {
+                alert('Please enter the number of four-leaf clovers.');
+                return;
+            }
+
+            // Fetch weather data for Cairo, Egypt
+            const weatherApiUrl = 'https://api.open-meteo.com/v1/forecast?latitude=30.0444&longitude=31.2357&current=temperature_2m&timezone=auto';
+
+            try {
+                const response = await fetch(weatherApiUrl);
+                const weatherData = await response.json();
+                
+                // Extract current temperature in Celsius
+                const temperatureC = weatherData.current.temperature_2m;
+
+                // Calculate snow day probability
+                const baseProbability = 0.1; // Base 10% chance
+                const cloverBonus = Math.min(cloverCount * 0.005, 0.5); // Max 50% bonus
+                const temperatureFactor = temperatureC < 0 ? 0.3 : 0; // 30% bonus if below freezing
+
+                const snowDayProbability = baseProbability + cloverBonus + temperatureFactor;
+
+                // Generate prediction message
+                const predictionMessage = `Based on your ${cloverCount} four-leaf clovers and the current temperature in Cairo (${temperatureC.toFixed(2)}°C), your chance of having a snow day is ${(snowDayProbability * 100).toFixed(2)}%.`;
+
+                document.getElementById('prediction').innerText = predictionMessage;
+            } catch (error) {
+                console.error('Error fetching weather data:', error);
+                alert('Failed to retrieve weather data. Please try again later.');
+            }
+        }
+    </script>
+</body>
+</html>
